@@ -1,7 +1,7 @@
 input = File.open("day_8_input.txt").readlines
 
-WIDTH = 60
-HEIGHT = 5
+WIDTH = 50
+HEIGHT = 6
 
 def rect(w, h, screen)
   for i in (0...w) do
@@ -11,7 +11,7 @@ def rect(w, h, screen)
   end
 end
 
-def rotate_row!(y, amount, screen)
+def rotate_row(y, amount, screen)
   start_idx = y * WIDTH
   last_idx = start_idx + WIDTH
   old_values = screen[start_idx...start_idx + WIDTH]
@@ -21,7 +21,7 @@ def rotate_row!(y, amount, screen)
   end
 end
 
-def rotate_col!(x, amount, screen)
+def rotate_col(x, amount, screen)
   old_values = []
 
   for i in (0...HEIGHT) do
@@ -58,14 +58,11 @@ input.each do |line|
     rotate_amount = split_line[4].to_i
     
     if split_line[1] == "row"
-      rotate_row!(rotate_target, rotate_amount, screen)
+      rotate_row(rotate_target, rotate_amount, screen)
     elsif split_line[1] == "column"
-      rotate_col!(rotate_target, rotate_amount, screen)      
+      rotate_col(rotate_target, rotate_amount, screen)      
     end
   end
-
-  puts line
-  print_screen(screen)
 end
 
 print_screen(screen)
