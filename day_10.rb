@@ -1,6 +1,6 @@
 input = File.open("day_10_input.txt").readlines
 
-@nodes = {}
+@node_index = {}
 
 class Node
   attr_accessor :name, :low_receiver, :high_receiver, :chips, :history
@@ -11,21 +11,25 @@ class Node
     @history = []
   end
 
+  def give_chip(value)
+    chips.delete(value)
+  end
+
   def take_chip(value)
     chips << value
     history << value
   end
 
-  def is_full_bot?
+  def is_full?
     name.split[0] == "bot" && @chips.count == 2
   end
 end
 
 def get_node(name)
-  return @nodes[name] if @nodes.include?(name)
+  return @node_index[name] if @node_index.include?(name)
   
   new_node = Node.new(name)
-  @nodes[name] = new_node
+  @node_index[name] = new_node
 
   new_node
 end
@@ -48,24 +52,27 @@ def build_graph(input)
   end
 end
 
+def transfer_chip(from, to, value)
+  from.give_chip(value)
+  to.take_chip(value)
+end
+
 def simulate
-  full = @nodes.select { |k,v| v.is_full_bot? }.values.to_a
+  full = @node_index.select { |k,v| v.is_full? }.values.to_a
 
   while full.count > 0
     giver = full.pop
 
-    giver.low_receiver.take_chip(giver.chips.min)
-    full << giver.low_receiver if giver.low_receiver.is_full_bot?
+    transfer_chip(giver, giver.low_receiver, giver.chips.min)
+    full << giver.low_receiver if giver.low_receiver.is_full?
 
-    giver.high_receiver.take_chip(giver.chips.max)
-    full << giver.high_receiver if giver.high_receiver.is_full_bot?
-
-    giver.chips.clear
+    transfer_chip(giver, giver.high_receiver, giver.chips.max)
+    full << giver.high_receiver if giver.high_receiver.is_full?
   end
 end
 
 def find_comparer(val1, val2)
-  @nodes.find { |k,v| v.history.sort == [val1, val2].sort }.first
+  @node_index.find { |k,v| v.history.sort == [val1, val2].sort }.first
 end
 
 build_graph(input)
@@ -74,8 +81,9 @@ simulate
 val1 = 61
 val2 = 17
 
-puts "The values #{val1} and #{val2} were compared by #{find_comparer(val1, val2)}"
+puts "#{val1} and #{val2} were compared by #{find_comparer(val1, val2)}"
 
-outputs = ["output 0", "output 1", "output 2"]
-output_product = outputs.map { |i| @nodes[i].chips.first }.reduce(:*)
-puts "The product of chips in outputs 0, 1, and 2 is #{output_product}"
+outputs = [0, 1, 2]
+output_product = outputs.map { |i| @node_index["output #{i}"].chips.first }.reduce(:*)
+
+puts "The product of chips in outputs #{outputs.join(', ')} is #{output_product}"
