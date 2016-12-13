@@ -1,6 +1,4 @@
-require 'building'
-require 'floor'
-require 'eqiupment'
+Dir['./day_11/*.rb'].each{ |f| require f }
 
 input = File.open("day_11_input.txt").readlines
 
