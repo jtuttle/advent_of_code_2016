@@ -99,4 +99,16 @@ class Building
     
     clone
   end
+
+  def hash_string
+    str = ""
+
+    for i in (0...@floors.count) do
+      str << i.to_s
+      str << @floors[i].map(&:to_s).sort.join
+    end
+    str << @elevator_level.to_s
+
+    str
+  end
 end
