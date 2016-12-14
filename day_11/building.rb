@@ -7,6 +7,10 @@ class Building
     @manifest = []
   end
 
+  def current_floor
+    floors[@elevator_level]
+  end
+
   def valid?
     @floors.each do |floor|
       microchips = floor.select { |e| e.type == :microchip }
@@ -41,6 +45,15 @@ class Building
     floor << equipment
     @manifest << equipment
     @manifest.sort_by!(&:element)
+  end
+
+  def move_equipment(equipment, from, to)
+    equipment.each do |e|
+      @floors[to] << e
+      @floors[from].delete(e)
+    end
+
+    @elevator_level = to
   end
 
   def parse(input)
