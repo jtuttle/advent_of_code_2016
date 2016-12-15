@@ -58,13 +58,41 @@ def manhattan_distance(p1, p2)
   (p1.x - p2.x).abs + (p1.y - p2.y).abs
 end
 
+def count_steps(start, goal)
+  neighbor_proc = Proc.new { |point| get_neighbors(point) }
+  heuristic_proc = Proc.new { |p1, p2| manhattan_distance(p1, p2) }
+  path = AStar.new(start, goal, neighbor_proc, heuristic_proc).execute
+  path.nil? ? nil : path.count - 1
+end
+
+def count_reachable_locations(start, max_steps)
+  count = 0
+
+  x_min = [0, start.x - max_steps].max
+  x_max = start.x + max_steps
+  y_min = [0, start.y - max_steps].max
+  y_max = start.y + max_steps
+
+  for x in (x_min..x_max)
+    for y in (y_min..y_max)
+      goal = Struct::Point.new(x, y)
+
+      if is_open?(goal)
+        steps = count_steps(start, goal)
+        count += 1 if !steps.nil? && steps <= max_steps
+      end
+    end
+  end
+
+  count
+end
+
 start = Struct::Point.new(1, 1)
+
 goal = Struct::Point.new(31, 39)
-neighbor_proc = Proc.new { |point| get_neighbors(point) }
-heuristic_proc = Proc.new { |point, goal| manhattan_distance(point, goal) }
+puts "It takes #{count_steps(start, goal)} steps to reach (#{goal.x}, #{goal.y})."
 
-search = AStar.new(start, goal, neighbor_proc, heuristic_proc)
-path = search.execute
-
-puts "Number of steps: #{path.count - 1}"
+max_steps = 50
+reachable_count = count_reachable_locations(start, max_steps)
+puts "There are #{reachable_count} locations reachable with at most #{max_steps} steps."
 

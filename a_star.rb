@@ -16,7 +16,7 @@ class PriorityQueue
   end
 
   def empty?
-    @heap.empty?
+    @heap.compact.empty?
   end
 
   def size
@@ -119,20 +119,13 @@ class AStar
         if !cost_map.has_key?(neighbor) || neighbor_cost < cost_map[neighbor]
           cost_map[neighbor] = neighbor_cost
           neighbor_priority = neighbor_cost + @heuristic_proc.call(neighbor, @goal)
-
-        if neighbor.x == 34 && neighbor.y == 42
-          puts "34, 42 prio: #{neighbor_priority}"
-        end
-
-        if neighbor.x == 35 && neighbor.y == 43
-          puts "35, 43 prio: #{neighbor_priority}"
-        end
-
           frontier << Node.new(neighbor, neighbor_priority)
           origin_map[neighbor] = current.data
         end
       end
     end
+
+    return nil if !origin_map.has_key?(@goal)
 
     path = []
     item = @goal
