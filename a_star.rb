@@ -35,8 +35,8 @@ class PriorityQueue
 
     parent_index = (index / 2)
 
-    # return if parent greater than child
-    return if @heap[parent_index] >= @heap[index]
+    # return if parent less than child
+    return if @heap[parent_index] <= @heap[index]
     
     swap(index, parent_index)
     heapify_up(parent_index)
@@ -51,10 +51,10 @@ class PriorityQueue
     not_last = child_index < @heap.size - 1
     left_child = @heap[child_index]
     right_child = @heap[child_index + 1]
-    child_index += 1 if not_last && right_child > left_child
+    child_index += 1 if not_last && right_child < left_child
 
     # return if already larger than child
-    return if @heap[index] >= @heap[child_index]
+    return if @heap[index] <= @heap[child_index]
 
     swap(index, child_index)
 

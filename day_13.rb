@@ -58,9 +58,6 @@ def manhattan_distance(p1, p2)
   (p1.x - p2.x).abs + (p1.y - p2.y).abs
 end
 
-puts draw_floor(40, 40)
-
-
 start = Struct::Point.new(1, 1)
 goal = Struct::Point.new(31, 39)
 neighbor_proc = Proc.new { |point| get_neighbors(point) }
@@ -69,8 +66,5 @@ heuristic_proc = Proc.new { |point, goal| manhattan_distance(point, goal) }
 search = AStar.new(start, goal, neighbor_proc, heuristic_proc)
 path = search.execute
 
+puts "Number of steps: #{path.count - 1}"
 
-
-puts draw_floor(60, 60, path)
-
-puts path.count
