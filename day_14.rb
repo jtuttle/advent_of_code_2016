@@ -1,5 +1,6 @@
 require 'digest'
 
+#input = "abc"
 input = "yjdafjpo"
 
 TRIPLET_REGEX = /(.)\1{2}/
