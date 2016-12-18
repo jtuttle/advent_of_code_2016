@@ -1,3 +1,5 @@
+require 'digest/sha1'
+
 class Building
   attr_reader :floors, :elevator_level
 
@@ -36,13 +38,11 @@ class Building
   end
 
   def add_floor
-    new_floor = []
-    @floors << new_floor
-    new_floor
+    @floors << []
   end
 
-  def add_equipment_to_floor(equipment, floor)
-    floor << equipment
+  def add_equipment_to_floor(equipment, floor_index)
+    @floors[floor_index] << equipment
     @manifest << equipment
     @manifest.sort_by!(&:element)
   end
@@ -57,15 +57,16 @@ class Building
   end
 
   def parse(input)
-    input.each do |line|
+    for i in (0...input.count) do
+      line = input[i]
       floor = add_floor
 
       line.scan(/(\w+) generator/).flatten.each do |element|
-        add_equipment_to_floor(Equipment.new(element, :generator), floor)
+        add_equipment_to_floor(Equipment.new(element, :generator), i)
       end
 
       line.scan(/(\w+)-compatible microchip/).flatten.each do |element|
-        add_equipment_to_floor(Equipment.new(element, :microchip), floor)
+        add_equipment_to_floor(Equipment.new(element, :microchip), i)
       end
     end
   end
@@ -89,18 +90,35 @@ class Building
   def clone
     clone = Building.new(@elevator_level)
 
-    @floors.each do |floor|
-      cloned_floor = clone.add_floor
+    for i in (0...@floors.count) do
+      floor = @floors[i]
+      clone.add_floor
 
       floor.each do |equipment|
-        clone.add_equipment_to_floor(equipment, cloned_floor)
+        clone.add_equipment_to_floor(equipment, i)
       end
     end
     
     clone
   end
 
-  def hash_string
+  def ==(other)
+    hash_key == other.hash_key
+  end
+
+  def equals?(other)
+    self == other
+  end
+  
+  def eql?(other)
+    self == other
+  end
+
+  def hash
+    Digest::SHA1.hexdigest(hash_key).to_i(16)
+  end
+  
+  def hash_key
     str = ""
 
     for i in (0...@floors.count) do
@@ -110,5 +128,13 @@ class Building
     str << @elevator_level.to_s
 
     str
+  end
+
+  def to_s
+    hash_key
+  end
+
+  def inspect
+    to_s
   end
 end
