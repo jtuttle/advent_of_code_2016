@@ -16,39 +16,48 @@ def generate_hash(salt, index, repetitions = 0)
   hash
 end
 
+def cached_hash_get(index, hash, &block)
+  if hash.has_key?(index)
+    hash[index]
+  else
+    new_value = yield(index)
+    hash[index] = new_value
+    new_value
+  end
+end
+
 def find_last_key_index(salt, key_target)
   index = 0
   key_count = 0
   last_key_index = 0
 
-  triplet_map = {}
+  hash_map = {}
+  quintuplet_map = {}
 
   while key_count < key_target
-    hash = yield(salt, index)
-
-    quintuplet_chars = hash.scan(QUINTUPLET_REGEX).map { |m| m[0] }
-
-    quintuplet_chars.each do |qc|
-      triplet_map.keys.select { |k| k > index - 1000 }.each do |k|
-        if triplet_map[k] == qc
-          puts "match #{k} (#{triplet_map[k]}) with #{index} (#{hash})"
-
-          key_count += 1
-          last_key_index = k
-          break if key_count == key_target
-        end
-      end
-    end
-
+    hash = cached_hash_get(index, hash_map) { |index| yield(salt, index) }
+      
     first_triplet = hash[TRIPLET_REGEX]
 
     unless first_triplet.nil?
-      triplet_map[index] = first_triplet[0]
+      for i in (index + 1..index + 1000)
+        quintuplet_chars = cached_hash_get(i, quintuplet_map) do |j|
+          cached_hash_get(j, hash_map) { |index| yield(salt, index) }.
+            scan(QUINTUPLET_REGEX).map { |m| m[0] }
+        end
+        
+        if quintuplet_chars.include?(first_triplet[0])
+          #puts "match #{index} (#{first_triplet[0]}) with #{i} (#{future_hash})"
+          key_count += 1
+          last_key_index = index
+          break
+        end
+      end
     end
-
+    
     index += 1
   end
-
+    
   last_key_index
 end
 
