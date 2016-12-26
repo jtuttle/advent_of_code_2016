@@ -6,36 +6,60 @@ class AssembunnyInterpreter
     @registers = registers
   end
 
-  def execute_program(input)
-    while(@ptr < input.count)
-      @ptr = execute_line(input[@ptr], registers, @ptr)
+  def execute_program(lines)
+    while(@ptr < lines.count)
+      line = lines[@ptr]
+      instruction = line.split[0]
+
+      if instruction == "tgl"
+        execute_toggle(line, lines)
+      else
+        execute_line(line)
+      end
+    end
+    
+    nil
+  end
+
+  def execute_line(line)
+    split_line = line.split
+
+    case split_line[0]
+    when "cpy"
+      src = read_value(split_line[1])
+      @registers[split_line[2]] = src
+    when "inc"
+      @registers[split_line[1]] += 1
+    when "dec"
+      @registers[split_line[1]] -= 1
+    end
+
+    if split_line[0] == "jnz"
+      src = read_value(split_line[1])
+      @ptr += (src != 0 ? split_line[2].to_i : 1)
+    else
+      @ptr += 1
     end
 
     nil
   end
 
-  def execute_line(line, registers, ptr)
-    instruction = line.split
+  def read_value(val)
+    @registers.keys.include?(val) ? @registers[val] : val.to_i
+  end
 
-    case instruction[0]
-    when "cpy"
-      src = instruction[1]
-      src = registers.keys.include?(src) ? registers[src] : src.to_i
-      registers[instruction[2]] = src
-    when "inc"
-      registers[instruction[1]] += 1
-    when "dec"
-      registers[instruction[1]] -= 1
-    end
+  def execute_toggle(toggle_instruction, lines)
+    toggle_instruction_split = toggle_instruction.split
+    target_index = @ptr + read_value(toggle_instruction_split[1])
+    target_instruction = lines[target_index]
 
-    if instruction[0] == "jnz"
-      src = instruction[1]
-      src = registers.keys.include?(src) ? registers[src] : src.to_i
-      ptr += (src != 0 ? instruction[2].to_i : 1)
-    else
-      ptr += 1
-    end
+puts toggle_instruction
+puts "register c is #{read_value(toggle_instruction_split[1])}"
+    puts "ptr is #{@ptr}"
 
-    ptr
+
+    @ptr += 1
+
+    nil
   end
 end
